@@ -12,7 +12,7 @@ import retrofit2.http.Header;
  */
 public interface GitHubRepository {
 
-    String GITHUB_API = "https://api.github.com/";
+    String BASE_URL = "https://api.github.com/";
 
     @GET("user")
     Call<User> basicAuth(@Header("Authorization") String authorization);

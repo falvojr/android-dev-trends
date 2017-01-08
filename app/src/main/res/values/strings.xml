@@ -5,8 +5,22 @@
     <string name="iv_github">GitHub Logo</string>
 
     <!-- Texts -->
-    <string name="txt_login">Login</string>
+    <string name="txt_basic_auth">Basic Auth</string>
+    <string name="txt_oauth">OAuth</string>
     <string name="txt_loading">Loading</string>
     <string name="txt_username">Username</string>
     <string name="txt_password">Password</string>
+    <string name="txt_or">OR</string>
+
+    <!-- Shared Preferences Keys -->
+    <!-- https://developer.android.com/training/basics/data-storage/shared-preferences.html -->
+    <string name="sp_file_key">io.brainmachine.PREFERENCE_FILE_KEY</string>
+    <string name="sp_auth_credential_key">AUTH_CREDENTIAL_KEY</string>
+
+    <!-- GitHub OAuth Keys -->
+    <string name="oauth_client_id">58e8aa3854fe1ce3fffc</string>
+    <string name="oauth_client_secret">69797c6c4a0e9d1d9758539e061acc19c9d87764</string>
+    <string name="oauth_host">brainmachine.io</string>
+    <string name="oauth_schema">http</string>
+
 </resources>

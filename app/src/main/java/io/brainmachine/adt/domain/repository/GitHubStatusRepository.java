@@ -13,7 +13,7 @@ import retrofit2.http.GET;
  */
 public interface GitHubStatusRepository {
 
-    String GITHUB_STATUS_API = "https://status.github.com/api/";
+    String BASE_URL = "https://status.github.com/api/";
 
     @GET("status.json")
     Call<Status> status();

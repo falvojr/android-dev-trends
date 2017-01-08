@@ -11,7 +11,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 
 /**
- * Custom callback for app needs.
+ * Custom callback for app needs (GitHub and GitHub Status APIs).
  *
  * Created by falvojr on 1/8/17.
  */

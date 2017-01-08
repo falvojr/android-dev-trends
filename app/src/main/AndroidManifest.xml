@@ -14,6 +14,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- OAuth Intent Filters -->
+                <!-- https://futurestud.io/tutorials/oauth-2-on-android-with-retrofit -->
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="@string/oauth_host" android:scheme="@string/oauth_schema" />
             </intent-filter>
         </activity>
     </application>

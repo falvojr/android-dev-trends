@@ -1,6 +1,11 @@
 package io.brainmachine.adt;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -11,8 +16,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import io.brainmachine.adt.domain.entity.AccessToken;
 import io.brainmachine.adt.domain.entity.Status;
 import io.brainmachine.adt.domain.entity.User;
+import io.brainmachine.adt.domain.repository.GitHubOAuthRepository;
 import io.brainmachine.adt.domain.repository.GitHubRepository;
 import io.brainmachine.adt.domain.repository.GitHubStatusRepository;
 import io.brainmachine.adt.retrofit.Callback;
@@ -21,7 +28,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * My first activity.
+ * GitHub authentication activity.
  *
  * @author falvojr
  */
@@ -33,10 +40,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView mLblStatusText;
     private EditText mTxtUsername;
     private EditText mTxtPassword;
-    private Button mBtnLogin;
+    private Button mBtnBasicAuth;
+    private Button mBtnOAuth;
 
     private GitHubStatusRepository mGitHubStatusApi;
+    private GitHubOAuthRepository mGitHubOAuthApi;
     private GitHubRepository mGitHubApi;
+
+    private SharedPreferences mSharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,22 +58,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLblStatusText = (TextView) findViewById(R.id.tvGitHubStatus);
         mTxtUsername = (EditText) findViewById(R.id.etUsername);
         mTxtPassword = (EditText) findViewById(R.id.etPassword);
-        mBtnLogin = (Button) findViewById(R.id.button);
-        mBtnLogin.setOnClickListener(this);
+        mBtnBasicAuth = (Button) findViewById(R.id.btBasicAuth);
+        mBtnOAuth = (Button) findViewById(R.id.btOAuth);
+
+        mBtnBasicAuth.setOnClickListener(this);
+        mBtnOAuth.setOnClickListener(this);
 
         final Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create());
 
         final Retrofit retrofitGitHubStatus = retrofitBuilder
-                .baseUrl(GitHubStatusRepository.GITHUB_STATUS_API)
+                .baseUrl(GitHubStatusRepository.BASE_URL)
                 .build();
-
+        final Retrofit retrofitGitHubOAuth = retrofitBuilder
+                .baseUrl(GitHubOAuthRepository.BASE_URL)
+                .build();
         final Retrofit retrofitGitHub = retrofitBuilder
-                .baseUrl(GitHubRepository.GITHUB_API)
+                .baseUrl(GitHubRepository.BASE_URL)
                 .build();
 
         mGitHubStatusApi = retrofitGitHubStatus.create(GitHubStatusRepository.class);
+        mGitHubOAuthApi = retrofitGitHubOAuth.create(GitHubOAuthRepository.class);
         mGitHubApi = retrofitGitHub.create(GitHubRepository.class);
+
+        mSharedPrefs = this.getSharedPreferences(getString(R.string.sp_file_key), Context.MODE_PRIVATE);
     }
 
     @Override
@@ -87,21 +106,75 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mLblStatusText.setText(message);
             }
         });
+        this.processOAuthRedirectUri();
+    }
+
+    private void processOAuthRedirectUri() {
+        // the intent filter defined in AndroidManifest will handle the return from ACTION_VIEW intent
+        final Uri uri = getIntent().getData();
+        if (uri != null && uri.toString().startsWith(this.getOAuthRedirectUri())) {
+            // use the parameter your API exposes for the code (mostly it's "code")
+            String code = uri.getQueryParameter("code");
+            if (code != null) {
+                // get access token
+                final String clientId = getString(R.string.oauth_client_id);
+                final String clientSecret = getString(R.string.oauth_client_secret);
+                mGitHubOAuthApi.acessToken(clientId, clientSecret, code).enqueue(new Callback<AccessToken>() {
+                    @Override
+                    protected void onSuccess(AccessToken entity) {
+                        saveSharedPrefAuthCredential(entity.getAuthCredential());
+                        //TODO Redirect to next activity
+                    }
+
+                    @Override
+                    protected void onError(String message) {
+                        Snackbar.make(mBtnOAuth, message, Snackbar.LENGTH_LONG).show();
+                    }
+                });
+            } else if (uri.getQueryParameter("error") != null) {
+                Snackbar.make(mBtnOAuth, uri.getQueryParameter("error"), Snackbar.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override
     public void onClick(final View view) {
-        final String authorization = Credentials.basic(mTxtUsername.getText().toString(), mTxtPassword.getText().toString());
-        mGitHubApi.basicAuth(authorization).enqueue(new Callback<User>() {
-            @Override
-            protected void onSuccess(User user) {
-                Snackbar.make(view, user.login, Snackbar.LENGTH_LONG).show();
-            }
+        switch (view.getId()) {
+            case R.id.btBasicAuth:
+                //TODO Validate fields to login
+                final String authCredential = Credentials.basic(mTxtUsername.getText().toString(), mTxtPassword.getText().toString());
+                mGitHubApi.basicAuth(authCredential).enqueue(new Callback<User>() {
+                    @Override
+                    protected void onSuccess(User user) {
+                        saveSharedPrefAuthCredential(authCredential);
+                        //TODO Redirect to next activity
+                    }
 
-            @Override
-            protected void onError(String message) {
-                Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
-            }
-        });
+                    @Override
+                    protected void onError(String message) {
+                        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+                    }
+                });
+                break;
+            case R.id.btOAuth:
+                final String baseUrl = GitHubOAuthRepository.BASE_URL + "authorize";
+                final String clientId = getString(R.string.oauth_client_id);
+                final String redirectUri = getOAuthRedirectUri();
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(baseUrl + "?client_id=" + clientId + "&redirect_uri=" + redirectUri));
+                startActivity(intent);
+                break;
+        }
+    }
+
+    private void saveSharedPrefAuthCredential(String authCredential) {
+        final String authCredentialKey = getString(R.string.sp_auth_credential_key);
+        mSharedPrefs.edit()
+                .putString(authCredentialKey, authCredential)
+                .apply();
+    }
+
+    @NonNull
+    private String getOAuthRedirectUri() {
+        return getString(R.string.oauth_schema) + "://" + getString(R.string.oauth_host);
     }
 }
