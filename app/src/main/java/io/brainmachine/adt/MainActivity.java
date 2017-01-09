@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import io.brainmachine.adt.domain.entity.AccessToken;
 import io.brainmachine.adt.domain.entity.Status;
@@ -124,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     protected void onSuccess(AccessToken entity) {
                         saveSharedPrefAuthCredential(entity.getAuthCredential());
                         //TODO Redirect to next activity
+                        Toast.makeText(MainActivity.this, "Sucesso OAuth!", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -134,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else if (uri.getQueryParameter("error") != null) {
                 Snackbar.make(mBtnOAuth, uri.getQueryParameter("error"), Snackbar.LENGTH_LONG).show();
             }
+            // Clear Intent Data preventing multiple calls
+            getIntent().setData(null);
         }
     }
 
@@ -148,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     protected void onSuccess(User user) {
                         saveSharedPrefAuthCredential(authCredential);
                         //TODO Redirect to next activity
+                        Toast.makeText(MainActivity.this, "Sucesso Basic Auth!", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
