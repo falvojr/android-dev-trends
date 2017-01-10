@@ -1,4 +1,4 @@
-package io.brainmachine.adt.domain.repository;
+package io.brainmachine.adt.domain;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import retrofit2.http.GET;
  *
  * Created by falvojr on 1/5/17.
  */
-public interface GitHubStatusRepository {
+public interface GitHubStatusApi {
 
     String BASE_URL = "https://status.github.com/api/";
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ImageView Content Descriptions -->
+    <string name="iv_github">Logo do GitHub</string>
+
+    <!-- Texts -->
+    <string name="txt_basic_auth">Basic Auth</string>
+    <string name="txt_oauth">OAuth</string>
+    <string name="txt_loading">Carregando</string>
+    <string name="txt_username">Usuário</string>
+    <string name="txt_password">Senha</string>
+    <string name="txt_or">OU</string>
+
+    <!-- Messages -->
+    <string name="msg_required_field">Campo obrigatório.</string>
+</resources>

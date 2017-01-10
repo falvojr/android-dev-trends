@@ -1,4 +1,4 @@
-package io.brainmachine.adt.domain.repository;
+package io.brainmachine.adt.domain;
 
 import io.brainmachine.adt.domain.entity.AccessToken;
 import retrofit2.Call;
@@ -12,7 +12,7 @@ import retrofit2.http.POST;
  * <p>
  * Created by falvojr on 1/5/17.
  */
-public interface GitHubOAuthRepository {
+public interface GitHubOAuthApi {
 
     String BASE_URL = "https://github.com/login/oauth/";
 

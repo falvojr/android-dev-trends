@@ -22,8 +22,9 @@ android {
 }
 
 ext {
-    // variable that can be referenced to keep support libs consistent
+    // variables that can be referenced to libs consistent
     supportLibVersion = '25.1.0'
+    retrofitLibVersion = '2.1.0'
 }
 
 dependencies {
@@ -39,6 +40,6 @@ dependencies {
     compile "com.android.support:design:${supportLibVersion}"
 
     // Retrofit (by Square)
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile "com.squareup.retrofit2:retrofit:${retrofitLibVersion}"
+    compile "com.squareup.retrofit2:converter-gson:${retrofitLibVersion}"
 }

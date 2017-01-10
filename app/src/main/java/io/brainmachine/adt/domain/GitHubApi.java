@@ -1,4 +1,4 @@
-package io.brainmachine.adt.domain.repository;
+package io.brainmachine.adt.domain;
 
 import io.brainmachine.adt.domain.entity.User;
 import retrofit2.Call;
@@ -10,7 +10,7 @@ import retrofit2.http.Header;
  *
  * Created by falvojr on 1/5/17.
  */
-public interface GitHubRepository {
+public interface GitHubApi {
 
     String BASE_URL = "https://api.github.com/";
 

@@ -1,4 +1,4 @@
-package io.brainmachine.adt.retrofit;
+package io.brainmachine.adt.util;
 
 import android.util.Log;
 

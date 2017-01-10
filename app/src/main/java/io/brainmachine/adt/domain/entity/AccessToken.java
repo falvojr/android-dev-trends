@@ -1,6 +1,8 @@
 package io.brainmachine.adt.domain.entity;
 
 /**
+ * Access token entity for GitHub API.
+ *
  * Created by falvojr on 1/8/17.
  */
 public class AccessToken {

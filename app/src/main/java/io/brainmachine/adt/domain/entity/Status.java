@@ -2,6 +2,8 @@ package io.brainmachine.adt.domain.entity;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Date;
+
 import io.brainmachine.adt.R;
 
 /**
@@ -13,11 +15,13 @@ public class Status {
 
     @SerializedName("status")
     public Type type;
-    public String body;
-    public String created_on;
-    public String last_updated;
+    @SerializedName("body")
+    public String message;
+    public Date created_on;
+    public Date last_updated;
 
     public enum Type {
+        NONE(android.R.color.black),
         @SerializedName("good")
         GOOD(R.color.materialGreen500),
         @SerializedName("minor")
