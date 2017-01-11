@@ -17,9 +17,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.brainmachine.adt.domain.GitHubApi;
 import io.brainmachine.adt.domain.GitHubOAuthApi;
 import io.brainmachine.adt.domain.GitHubStatusApi;
@@ -29,24 +29,26 @@ import io.brainmachine.adt.domain.entity.User;
 import io.brainmachine.adt.util.AppUtil;
 import io.brainmachine.adt.util.Callback;
 import okhttp3.Credentials;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * GitHub authentication activity.
  *
  * @author falvojr
  */
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private ImageView mImgStatusImage;
-    private TextView mLblStatusText;
-    private TextInputLayout mWrapperTxtUsername;
-    private TextInputLayout mWrapperTxtPassword;
-    private Button mBtnBasicAuth;
-    private Button mBtnOAuth;
+    @BindView(R.id.ivGitHubStatus)
+    ImageView mImgStatusImage;
+    @BindView(R.id.tvGitHubStatus)
+    TextView mLblStatusText;
+    @BindView(R.id.tilUsername)
+    TextInputLayout mWrapperTxtUsername;
+    @BindView(R.id.tilPassword)
+    TextInputLayout mWrapperTxtPassword;
+    @BindView(R.id.btOAuth)
+    Button mBtnOAuth;
 
     private GitHubStatusApi mGitHubStatusApi;
     private GitHubOAuthApi mGitHubOAuthApi;
@@ -59,37 +61,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mImgStatusImage = (ImageView) findViewById(R.id.ivGitHubStatus);
-        mLblStatusText = (TextView) findViewById(R.id.tvGitHubStatus);
-        mWrapperTxtUsername = (TextInputLayout) findViewById(R.id.tilUsername);
-        mWrapperTxtPassword = (TextInputLayout) findViewById(R.id.tilPassword);
-        mBtnBasicAuth = (Button) findViewById(R.id.btBasicAuth);
-        mBtnOAuth = (Button) findViewById(R.id.btOAuth);
+        ButterKnife.bind(this);
 
-        mBtnBasicAuth.setOnClickListener(this);
-        mBtnOAuth.setOnClickListener(this);
+        mBtnOAuth.setOnClickListener(view -> {
+            final String baseUrl = GitHubOAuthApi.BASE_URL + "authorize";
+            final String clientId = getString(R.string.oauth_client_id);
+            final String redirectUri = getOAuthRedirectUri();
+            final Uri uri = Uri.parse(baseUrl + "?client_id=" + clientId + "&redirect_uri=" + redirectUri);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
+        });
 
-        // http://stackoverflow.com/a/6875295/3072570
-        final Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                .create();
-
-        final Retrofit.Builder retrofitBuilder = new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create(gson));
-
-        final Retrofit retrofitGitHubStatus = retrofitBuilder
-                .baseUrl(GitHubStatusApi.BASE_URL)
-                .build();
-        final Retrofit retrofitGitHubOAuth = retrofitBuilder
-                .baseUrl(GitHubOAuthApi.BASE_URL)
-                .build();
-        final Retrofit retrofitGitHub = retrofitBuilder
-                .baseUrl(GitHubApi.BASE_URL)
-                .build();
-
-        mGitHubStatusApi = retrofitGitHubStatus.create(GitHubStatusApi.class);
-        mGitHubOAuthApi = retrofitGitHubOAuth.create(GitHubOAuthApi.class);
-        mGitHubApi = retrofitGitHub.create(GitHubApi.class);
+        mGitHubStatusApi = GitHubStatusApi.RETROFIT.create(GitHubStatusApi.class);
+        mGitHubOAuthApi = GitHubOAuthApi.RETROFIT.create(GitHubOAuthApi.class);
+        mGitHubApi = GitHubApi.RETROFIT.create(GitHubApi.class);
 
         mSharedPrefs = this.getSharedPreferences(getString(R.string.sp_file_key), Context.MODE_PRIVATE);
     }
@@ -131,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // get access token
                 final String clientId = getString(R.string.oauth_client_id);
                 final String clientSecret = getString(R.string.oauth_client_secret);
-                mGitHubOAuthApi.acessToken(clientId, clientSecret, code).enqueue(new Callback<AccessToken>() {
+                mGitHubOAuthApi.accessToken(clientId, clientSecret, code).enqueue(new Callback<AccessToken>() {
                     @Override
                     protected void onSuccess(AccessToken entity) {
                         saveSharedPrefAuthCredential(entity.getAuthCredential());
@@ -152,44 +137,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    public void onClick(final View view) {
-        switch (view.getId()) {
-            case R.id.btBasicAuth:
-                if (AppUtil.validateRequiredTextInputLayout(this, mWrapperTxtUsername, mWrapperTxtPassword)) {
-                    final String username = mWrapperTxtUsername.getEditText().getText().toString();
-                    final String password = mWrapperTxtPassword.getEditText().getText().toString();
-                    final String authCredential = Credentials.basic(username, password);
-                    mGitHubApi.basicAuth(authCredential).enqueue(new Callback<User>() {
-                        @Override
-                        protected void onSuccess(User user) {
-                            saveSharedPrefAuthCredential(authCredential);
-                            //TODO Redirect to next activity
-                            Toast.makeText(MainActivity.this, "Sucesso Basic Auth!", Toast.LENGTH_LONG).show();
-                        }
-
-                        @Override
-                        protected void onError(String message) {
-                            Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
-                        }
-                    });
+    @OnClick(R.id.btBasicAuth)
+    public void onBasicAuthClick(final View view) {
+        if (AppUtil.validateRequiredTextInputLayout(this, mWrapperTxtUsername, mWrapperTxtPassword)) {
+            final String username = mWrapperTxtUsername.getEditText().getText().toString();
+            final String password = mWrapperTxtPassword.getEditText().getText().toString();
+            final String authCredential = Credentials.basic(username, password);
+            mGitHubApi.basicAuth(authCredential).enqueue(new Callback<User>() {
+                @Override
+                protected void onSuccess(User user) {
+                    saveSharedPrefAuthCredential(authCredential);
+                    //TODO Redirect to next activity
+                    Toast.makeText(MainActivity.this, "Sucesso Basic Auth!", Toast.LENGTH_LONG).show();
                 }
-                break;
-            case R.id.btOAuth:
-                final String baseUrl = GitHubOAuthApi.BASE_URL + "authorize";
-                final String clientId = getString(R.string.oauth_client_id);
-                final String redirectUri = getOAuthRedirectUri();
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(baseUrl + "?client_id=" + clientId + "&redirect_uri=" + redirectUri));
-                startActivity(intent);
-                break;
+
+                @Override
+                protected void onError(String message) {
+                    Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+                }
+            });
         }
     }
 
     private void saveSharedPrefAuthCredential(String authCredential) {
         final String authCredentialKey = getString(R.string.sp_auth_credential_key);
-        mSharedPrefs.edit()
-                .putString(authCredentialKey, authCredential)
-                .apply();
+        mSharedPrefs.edit().putString(authCredentialKey, authCredential).apply();
     }
 
     @NonNull

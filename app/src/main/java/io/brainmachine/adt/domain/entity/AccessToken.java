@@ -10,9 +10,10 @@ public class AccessToken {
     public String token_type;
 
     public String getAuthCredential() {
-        // OAuth requires uppercase Authorization HTTP header value for token type
-        if (!Character.isUpperCase(token_type.charAt(0))) {
-            token_type = Character.toString(token_type.charAt(0)).toUpperCase() + token_type.substring(1);
+        final char firstChar = token_type.charAt(0);
+        if (!Character.isUpperCase(firstChar)) {
+            final String first = Character.toString(firstChar).toUpperCase();
+            token_type = first + token_type.substring(1);
         }
         return token_type + " " + access_token;
     }
