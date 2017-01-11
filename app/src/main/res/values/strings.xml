@@ -22,6 +22,10 @@
     <string name="txt_username">Username</string>
     <string name="txt_password">Password</string>
     <string name="txt_or">OR</string>
+    <string name="txt_call_helpdesk">Call helpdesk</string>
+    <string name="txt_good">Status: Good</string>
+    <string name="txt_minor">Status: Minor</string>
+    <string name="txt_major">Status: Major</string>
 
     <!-- Messages -->
     <string name="msg_required_field">Required field.</string>

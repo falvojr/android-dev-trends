@@ -46,11 +46,20 @@ dependencies {
     // Design Support (by Google)
     compile "com.android.support:design:${supportLibVersion}"
 
-    // Retrofit (by Square)
-    compile "com.squareup.retrofit2:retrofit:${retrofitLibVersion}"
-    compile "com.squareup.retrofit2:converter-gson:${retrofitLibVersion}"
-
     // Butter Knife (by Jake Wharton)
     compile "com.jakewharton:butterknife:${butterknifeLibVersion}"
     annotationProcessor "com.jakewharton:butterknife-compiler:${butterknifeLibVersion}"
+
+    // Retrofit (by Square)
+    compile "com.squareup.retrofit2:retrofit:${retrofitLibVersion}"
+    compile "com.squareup.retrofit2:converter-gson:${retrofitLibVersion}"
+    compile "com.squareup.retrofit2:adapter-rxjava:${retrofitLibVersion}"
+
+    // RxJava (by ReactiveX)
+    compile 'io.reactivex:rxandroid:1.2.1'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex:rxjava:1.1.6'
+
+
 }

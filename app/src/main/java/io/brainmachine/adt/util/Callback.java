@@ -1,7 +1,5 @@
 package io.brainmachine.adt.util;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,8 +15,6 @@ import retrofit2.Response;
  */
 public abstract class Callback<T> implements retrofit2.Callback<T> {
 
-    private static final String TAG = Callback.class.getSimpleName();
-
     @Override
     public void onResponse(Call<T> call, Response<T> response) {
         if (response.isSuccessful()) {
@@ -30,7 +26,6 @@ public abstract class Callback<T> implements retrofit2.Callback<T> {
                 final JSONObject json = new JSONObject(errorBody);
                 onError(json.getString("message"));
             } catch (IOException e) {
-                Log.e(TAG, "Error on response.errorBody().string()", e);
                 onError(e.getMessage());
             } catch (JSONException e) {
                 onError(errorBody);
@@ -40,7 +35,6 @@ public abstract class Callback<T> implements retrofit2.Callback<T> {
 
     @Override
     public void onFailure(Call<T> call, Throwable t) {
-        Log.e(TAG, "The onFailure method is called", t);
         onError(t.getMessage());
     }
 

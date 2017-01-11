@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Tendências Android</string>
+
     <!-- ImageView Content Descriptions -->
     <string name="iv_github">Logo do GitHub</string>
 
@@ -10,6 +12,10 @@
     <string name="txt_username">Usuário</string>
     <string name="txt_password">Senha</string>
     <string name="txt_or">OU</string>
+    <string name="txt_call_helpdesk">Chamar helpdesk</string>
+    <string name="txt_good">Status: Bom</string>
+    <string name="txt_minor">Status: Alerta</string>
+    <string name="txt_major">Status: Indisponível</string>
 
     <!-- Messages -->
     <string name="msg_required_field">Campo obrigatório.</string>

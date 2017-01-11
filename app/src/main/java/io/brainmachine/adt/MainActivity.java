@@ -11,6 +11,9 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -83,27 +86,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Restore default GitHub fields status
-        updateGitHubStatusFields(getString(R.string.txt_loading), Status.Type.NONE.getColor());
+        updateGitHubStatusFields(Status.Type.NONE);
         // Get last message from GitHub Status API
         mGitHubStatusApi.lastMessage().enqueue(new Callback<Status>() {
             @Override
             protected void onSuccess(Status status) {
-                updateGitHubStatusFields(status.message, status.type.getColor());
+                updateGitHubStatusFields(status.type);
             }
             @Override
             protected void onError(String message) {
-                updateGitHubStatusFields(message, Status.Type.MAJOR.getColor());
+                Log.d(TAG, message);
+                updateGitHubStatusFields(Status.Type.MAJOR);
             }
         });
         // Process (if necessary) OAUth redirect
         this.processOAuthRedirectUri();
     }
 
-    private void updateGitHubStatusFields(String message, int colorRes) {
-        int color = ContextCompat.getColor(MainActivity.this, colorRes);
+    private void updateGitHubStatusFields(Status.Type statusType) {
+        int color = ContextCompat.getColor(MainActivity.this, statusType.getColorRes());
         DrawableCompat.setTint(mImgStatusImage.getDrawable(), color);
         mLblStatusText.setTextColor(color);
-        mLblStatusText.setText(message);
+        mLblStatusText.setText(getString(statusType.getMessageRes()));
     }
 
     private void processOAuthRedirectUri() {
@@ -167,5 +171,26 @@ public class MainActivity extends AppCompatActivity {
     @NonNull
     private String getOAuthRedirectUri() {
         return getString(R.string.oauth_schema) + "://" + getString(R.string.oauth_host);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.icCallHelpdesk:
+                final String phone = "+55 16 997218281";
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phone, null));
+                startActivity(intent);
+                return true;
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 }
