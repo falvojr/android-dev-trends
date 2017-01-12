@@ -79,9 +79,7 @@ public class RxJavaSamples {
                 filter(s -> s.contains("e")).
                 map(String::toUpperCase).
                 reduce(new StringBuilder(), StringBuilder::append).
-                subscribe(System.out::print,
-                        e -> {},
-                        () -> System.out.println("!"));
+                subscribe(System.out::print, e -> {}, () -> System.out.println("!"));
 
     }
 }

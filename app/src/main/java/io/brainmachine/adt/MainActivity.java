@@ -1,6 +1,5 @@
 package io.brainmachine.adt;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -10,7 +9,6 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,12 +20,15 @@ import android.widget.TextView;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.brainmachine.adt.domain.GitHubApi;
-import io.brainmachine.adt.domain.GitHubOAuthApi;
-import io.brainmachine.adt.domain.GitHubStatusApi;
+import dagger.Lazy;
+import io.brainmachine.adt.domain.GitHubOAuthService;
+import io.brainmachine.adt.domain.GitHubService;
+import io.brainmachine.adt.domain.GitHubStatusService;
 import io.brainmachine.adt.domain.entity.AccessToken;
 import io.brainmachine.adt.domain.entity.Status;
 import io.brainmachine.adt.domain.entity.User;
@@ -42,7 +43,7 @@ import rx.schedulers.Schedulers;
  *
  * @author falvojr
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -57,11 +58,15 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.btOAuth)
     Button mBtnOAuth;
 
-    private GitHubStatusApi mGitHubStatusApi;
-    private GitHubOAuthApi mGitHubOAuthApi;
-    private GitHubApi mGitHubApi;
+    @Inject
+    GitHubStatusService mGitHubStatusService;
+    @Inject
+    Lazy<GitHubOAuthService> mGitHubOAuthService;
+    @Inject
+    Lazy<GitHubService> mGitHubService;
 
-    private SharedPreferences mSharedPrefs;
+    @Inject
+    SharedPreferences mSharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,19 +74,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-
-        mGitHubStatusApi = GitHubStatusApi.RETROFIT.create(GitHubStatusApi.class);
-        mGitHubOAuthApi = GitHubOAuthApi.RETROFIT.create(GitHubOAuthApi.class);
-        mGitHubApi = GitHubApi.RETROFIT.create(GitHubApi.class);
-
-        mSharedPrefs = this.getSharedPreferences(getString(R.string.sp_file_key), Context.MODE_PRIVATE);
+        super.getMyApplication().getDaggerDiComponent().inject(this);
 
         this.bindUsingRx();
     }
 
     private void bindUsingRx() {
         RxView.clicks(mBtnOAuth).subscribe(aVoid -> {
-            final String baseUrl = GitHubOAuthApi.BASE_URL + "authorize";
+            final String baseUrl = GitHubOAuthService.BASE_URL + "authorize";
             final String clientId = getString(R.string.oauth_client_id);
             final String redirectUri = getOAuthRedirectUri();
             final Uri uri = Uri.parse(baseUrl + "?client_id=" + clientId + "&redirect_uri=" + redirectUri);
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         // Restore default GitHub fields status
         updateGitHubStatusFields(Status.Type.NONE);
         // Get last status from GitHub Status API
-        mGitHubStatusApi.lastMessage()
+        mGitHubStatusService.lastMessage()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Status>() {
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 // get access token
                 final String clientId = getString(R.string.oauth_client_id);
                 final String clientSecret = getString(R.string.oauth_client_secret);
-                mGitHubOAuthApi.accessToken(clientId, clientSecret, code)
+                mGitHubOAuthService.get().accessToken(clientId, clientSecret, code)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Subscriber<AccessToken>() {
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             final String username = mWrapperTxtUsername.getEditText().getText().toString();
             final String password = mWrapperTxtPassword.getEditText().getText().toString();
             final String authCredential = Credentials.basic(username, password);
-            mGitHubApi.basicAuth(authCredential)
+            mGitHubService.get().basicAuth(authCredential)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Subscriber<User>() {
