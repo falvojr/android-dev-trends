@@ -18,7 +18,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding.widget.RxTextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -30,8 +32,10 @@ import io.brainmachine.adt.domain.entity.AccessToken;
 import io.brainmachine.adt.domain.entity.Status;
 import io.brainmachine.adt.domain.entity.User;
 import io.brainmachine.adt.util.AppUtil;
-import io.brainmachine.adt.util.Callback;
 import okhttp3.Credentials;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * GitHub authentication activity.
@@ -66,7 +70,17 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        mBtnOAuth.setOnClickListener(view -> {
+        mGitHubStatusApi = GitHubStatusApi.RETROFIT.create(GitHubStatusApi.class);
+        mGitHubOAuthApi = GitHubOAuthApi.RETROFIT.create(GitHubOAuthApi.class);
+        mGitHubApi = GitHubApi.RETROFIT.create(GitHubApi.class);
+
+        mSharedPrefs = this.getSharedPreferences(getString(R.string.sp_file_key), Context.MODE_PRIVATE);
+
+        this.bindUsingRx();
+    }
+
+    private void bindUsingRx() {
+        RxView.clicks(mBtnOAuth).subscribe(aVoid -> {
             final String baseUrl = GitHubOAuthApi.BASE_URL + "authorize";
             final String clientId = getString(R.string.oauth_client_id);
             final String redirectUri = getOAuthRedirectUri();
@@ -75,11 +89,18 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        mGitHubStatusApi = GitHubStatusApi.RETROFIT.create(GitHubStatusApi.class);
-        mGitHubOAuthApi = GitHubOAuthApi.RETROFIT.create(GitHubOAuthApi.class);
-        mGitHubApi = GitHubApi.RETROFIT.create(GitHubApi.class);
-
-        mSharedPrefs = this.getSharedPreferences(getString(R.string.sp_file_key), Context.MODE_PRIVATE);
+        if (mWrapperTxtUsername.getEditText() != null && mWrapperTxtPassword.getEditText() != null) {
+            RxTextView.textChanges(mWrapperTxtUsername.getEditText())
+                    .skip(1)
+                    .subscribe(text -> {
+                AppUtil.validateRequiredTextInputLayout(this, mWrapperTxtUsername);
+            });
+            RxTextView.textChanges(mWrapperTxtPassword.getEditText())
+                    .skip(1)
+                    .subscribe(text -> {
+                AppUtil.validateRequiredTextInputLayout(this, mWrapperTxtPassword);
+            });
+        }
     }
 
     @Override
@@ -87,18 +108,25 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // Restore default GitHub fields status
         updateGitHubStatusFields(Status.Type.NONE);
-        // Get last message from GitHub Status API
-        mGitHubStatusApi.lastMessage().enqueue(new Callback<Status>() {
-            @Override
-            protected void onSuccess(Status status) {
-                updateGitHubStatusFields(status.type);
-            }
-            @Override
-            protected void onError(String message) {
-                Log.d(TAG, message);
-                updateGitHubStatusFields(Status.Type.MAJOR);
-            }
-        });
+        // Get last status from GitHub Status API
+        mGitHubStatusApi.lastMessage()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Status>() {
+                    @Override
+                    public void onCompleted() { }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG, e.getMessage(), e);
+                        updateGitHubStatusFields(Status.Type.MAJOR);
+                    }
+
+                    @Override
+                    public void onNext(Status status) {
+                        updateGitHubStatusFields(status.type);
+                    }
+                });
         // Process (if necessary) OAUth redirect
         this.processOAuthRedirectUri();
     }
@@ -120,19 +148,26 @@ public class MainActivity extends AppCompatActivity {
                 // get access token
                 final String clientId = getString(R.string.oauth_client_id);
                 final String clientSecret = getString(R.string.oauth_client_secret);
-                mGitHubOAuthApi.accessToken(clientId, clientSecret, code).enqueue(new Callback<AccessToken>() {
-                    @Override
-                    protected void onSuccess(AccessToken entity) {
-                        saveSharedPrefAuthCredential(entity.getAuthCredential());
-                        //TODO Redirect to next activity
-                        Toast.makeText(MainActivity.this, "Sucesso OAuth!", Toast.LENGTH_LONG).show();
-                    }
+                mGitHubOAuthApi.accessToken(clientId, clientSecret, code)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<AccessToken>() {
+                                       @Override
+                                       public void onCompleted() { }
 
-                    @Override
-                    protected void onError(String message) {
-                        Snackbar.make(mBtnOAuth, message, Snackbar.LENGTH_LONG).show();
-                    }
-                });
+                                       @Override
+                                       public void onError(Throwable e) {
+                                           Log.d(TAG, e.getMessage(), e);
+                                           Snackbar.make(mBtnOAuth, e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                       }
+
+                                       @Override
+                                       public void onNext(AccessToken accessToken) {
+                                           saveSharedPrefAuthCredential(accessToken.getAuthCredential());
+                                           //TODO Redirect to next activity
+                                           Snackbar.make(mBtnOAuth, "Sucesso OAuth!", Snackbar.LENGTH_LONG).show();
+                                       }
+                                   });
             } else if (uri.getQueryParameter("error") != null) {
                 Snackbar.make(mBtnOAuth, uri.getQueryParameter("error"), Snackbar.LENGTH_LONG).show();
             }
@@ -147,19 +182,26 @@ public class MainActivity extends AppCompatActivity {
             final String username = mWrapperTxtUsername.getEditText().getText().toString();
             final String password = mWrapperTxtPassword.getEditText().getText().toString();
             final String authCredential = Credentials.basic(username, password);
-            mGitHubApi.basicAuth(authCredential).enqueue(new Callback<User>() {
-                @Override
-                protected void onSuccess(User user) {
-                    saveSharedPrefAuthCredential(authCredential);
-                    //TODO Redirect to next activity
-                    Toast.makeText(MainActivity.this, "Sucesso Basic Auth!", Toast.LENGTH_LONG).show();
-                }
+            mGitHubApi.basicAuth(authCredential)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<User>() {
+                        @Override
+                        public void onCompleted() { }
 
-                @Override
-                protected void onError(String message) {
-                    Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
-                }
-            });
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.d(TAG, e.getMessage(), e);
+                            Snackbar.make(view, e.getMessage(), Snackbar.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onNext(User user) {
+                            saveSharedPrefAuthCredential(authCredential);
+                            //TODO Redirect to next activity
+                            Snackbar.make(view, "Sucesso Basic Auth!", Snackbar.LENGTH_LONG).show();
+                        }
+                    });
         }
     }
 

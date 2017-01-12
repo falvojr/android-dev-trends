@@ -17,8 +17,8 @@ public class Status {
     public Type type;
     @SerializedName("body")
     public String message;
-    public Date created_on;
-    public Date last_updated;
+    @SerializedName("created_on")
+    public Date createdOn;
 
     public enum Type {
         NONE(android.R.color.black, R.string.txt_loading),

@@ -9,8 +9,8 @@ import rx.Observer;
 /**
  * Created by falvojr on 1/11/17.
  *
- * @see <a href="https://medium.com/swlh/party-tricks-with-rxjava-rxandroid-retrolambda-1b06ed7cd29c">
- *     Party tricks with RxJava, RxAndroid & Retrolambda</a>
+ * @see <a href="https://github.com/ReactiveX/RxJava/wiki//Alphabetical-List-of-Observable-Operators">
+ *     Alphabetical List of Observable Operators</a>
  */
 public class RxJavaSamples {
 
