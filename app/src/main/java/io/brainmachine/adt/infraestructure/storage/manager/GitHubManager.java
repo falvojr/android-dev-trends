@@ -1,7 +1,5 @@
 package io.brainmachine.adt.infraestructure.storage.manager;
 
-import javax.inject.Inject;
-
 import io.brainmachine.adt.domain.entity.User;
 import io.brainmachine.adt.domain.repository.GitHubRepository;
 import io.brainmachine.adt.infraestructure.storage.service.GitHubService;
@@ -13,7 +11,6 @@ public class GitHubManager implements GitHubRepository {
 
     private final GitHubService mGitHubService;
 
-    @Inject
     public GitHubManager(GitHubService gitHubService) {
         mGitHubService = gitHubService;
     }

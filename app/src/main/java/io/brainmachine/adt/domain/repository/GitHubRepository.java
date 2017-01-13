@@ -6,7 +6,7 @@ import rx.Observable;
 /**
  * GitHub API repository.
  * <p>
- * Created by falvojr on 1/5/17.
+ * Created by falvojr on 1/13/17.
  */
 public interface GitHubRepository {
 

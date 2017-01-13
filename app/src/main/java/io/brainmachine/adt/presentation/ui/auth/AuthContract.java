@@ -6,7 +6,7 @@ import io.brainmachine.adt.domain.entity.User;
 public interface AuthContract {
 
     interface View {
-        void onLoadStatusFinished(Status.Type statusType);
+        void onLoadStatusType(Status.Type statusType);
 
         void onAuthSuccess(String credential, User entity);
 

@@ -6,9 +6,9 @@ import rx.Observable;
 /**
  * GitHub OAUth repository.
  * <p>
- * Created by falvojr on 1/5/17.
+ * Created by falvojr on 1/13/17.
  */
 public interface GitHubOAuthRepository {
 
-    Observable<AccessToken> accessToken(String clientId, String clientSecret, String code);
+    Observable<AccessToken> getAccessToken(String clientId, String clientSecret, String code);
 }

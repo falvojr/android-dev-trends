@@ -66,7 +66,7 @@ public class AuthActivity extends BaseActivity implements AuthContract.View {
     protected void onResume() {
         super.onResume();
         // Restore default GitHub fields status
-        updateGitHubStatusFields(Status.Type.NONE);
+        onLoadStatusType(Status.Type.NONE);
         // Get last status from GitHub Status API
         mPresenter.loadStatus();
         // Process (if necessary) OAUth redirect
@@ -74,8 +74,11 @@ public class AuthActivity extends BaseActivity implements AuthContract.View {
     }
 
     @Override
-    public void onLoadStatusFinished(Status.Type statusType) {
-        updateGitHubStatusFields(statusType);
+    public void onLoadStatusType(Status.Type statusType) {
+        int color = ContextCompat.getColor(AuthActivity.this, statusType.getColorRes());
+        DrawableCompat.setTint(mImgStatusImage.getDrawable(), color);
+        mLblStatusText.setTextColor(color);
+        mLblStatusText.setText(getString(statusType.getMessageRes()));
     }
 
     @Override
@@ -113,13 +116,6 @@ public class AuthActivity extends BaseActivity implements AuthContract.View {
                         mAppHelper.validateRequiredTextInputLayout(mWrapperTxtPassword);
                     });
         }
-    }
-
-    private void updateGitHubStatusFields(Status.Type statusType) {
-        int color = ContextCompat.getColor(AuthActivity.this, statusType.getColorRes());
-        DrawableCompat.setTint(mImgStatusImage.getDrawable(), color);
-        mLblStatusText.setTextColor(color);
-        mLblStatusText.setText(getString(statusType.getMessageRes()));
     }
 
     @OnClick(R.id.btBasicAuth)

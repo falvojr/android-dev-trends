@@ -1,7 +1,5 @@
 package io.brainmachine.adt.presentation.ui.auth;
 
-import javax.inject.Inject;
-
 import io.brainmachine.adt.domain.entity.Status;
 import io.brainmachine.adt.domain.repository.GitHubOAuthRepository;
 import io.brainmachine.adt.domain.repository.GitHubRepository;
@@ -17,10 +15,7 @@ public class AuthPresenter implements AuthContract.Presenter {
     private GitHubStatusRepository mGitHubStatusRepository;
     private GitHubOAuthRepository mGitHubOAuthRepository;
 
-    @Inject
-    public AuthPresenter(GitHubRepository gitHubRepository,
-                         GitHubStatusRepository gitHubStatusRepository,
-                         GitHubOAuthRepository gitHubOAuthRepository) {
+    public AuthPresenter(GitHubRepository gitHubRepository, GitHubStatusRepository gitHubStatusRepository, GitHubOAuthRepository gitHubOAuthRepository) {
         mGitHubRepository = gitHubRepository;
         mGitHubStatusRepository = gitHubStatusRepository;
         mGitHubOAuthRepository = gitHubOAuthRepository;
@@ -33,11 +28,11 @@ public class AuthPresenter implements AuthContract.Presenter {
 
     @Override
     public void loadStatus() {
-        mGitHubStatusRepository.lastMessage()
+        mGitHubStatusRepository.getLastStatus()
                 .subscribe(entity -> {
-                    mView.onLoadStatusFinished(entity.type);
+                    mView.onLoadStatusType(entity.type);
                 }, error -> {
-                    mView.onLoadStatusFinished(Status.Type.MAJOR);
+                    mView.onLoadStatusType(Status.Type.MAJOR);
                 });
     }
 
@@ -53,7 +48,7 @@ public class AuthPresenter implements AuthContract.Presenter {
 
     @Override
     public void callAccessToken(String clientId, String clientSecret, String code) {
-        mGitHubOAuthRepository.accessToken(clientId, clientSecret, code)
+        mGitHubOAuthRepository.getAccessToken(clientId, clientSecret, code)
                 .subscribe(entity -> {
                     callGetUser(entity.getAuthCredential());
                 }, error -> {
