@@ -1,4 +1,4 @@
-package io.brainmachine.adt.domain;
+package io.brainmachine.adt.infraestructure.storage.service;
 
 import io.brainmachine.adt.domain.entity.AccessToken;
 import retrofit2.http.Field;

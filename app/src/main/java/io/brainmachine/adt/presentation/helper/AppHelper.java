@@ -1,4 +1,4 @@
-package io.brainmachine.adt.util;
+package io.brainmachine.adt.presentation.helper;
 
 import android.content.Context;
 import android.support.design.widget.TextInputLayout;
@@ -11,19 +11,21 @@ import io.brainmachine.adt.R;
  *
  * Created by falvojr on 1/10/17.
  */
-public final class AppUtil {
+public final class AppHelper {
 
-    private AppUtil() {
-        super();
+    private final Context mContext;
+
+    public AppHelper(Context context) {
+        mContext = context;
     }
 
-    public static boolean validateRequiredTextInputLayout(Context context, TextInputLayout... fields) {
+    public boolean validateRequiredTextInputLayout(TextInputLayout... fields) {
         boolean isValid = true;
         for (TextInputLayout field : fields) {
             final EditText editText = field.getEditText();
             if (editText != null) {
                 if (editText.getText().toString().isEmpty()) {
-                    field.setError(context.getString(R.string.msg_required_field));
+                    field.setError(mContext.getString(R.string.msg_required_field));
                     field.setErrorEnabled(true);
                     isValid = false;
                 } else {

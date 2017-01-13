@@ -1,4 +1,4 @@
-package io.brainmachine.adt.domain;
+package io.brainmachine.adt.infraestructure.storage.service;
 
 import io.brainmachine.adt.domain.entity.User;
 import retrofit2.http.GET;
@@ -15,5 +15,5 @@ public interface GitHubService {
     String BASE_URL = "https://api.github.com/";
 
     @GET("user")
-    Observable<User> basicAuth(@Header("Authorization") String authorization);
+    Observable<User> getUser(@Header("Authorization") String authorization);
 }

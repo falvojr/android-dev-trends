@@ -4,6 +4,7 @@ import android.app.Application;
 
 import io.brainmachine.adt.dagger.DaggerDiComponent;
 import io.brainmachine.adt.dagger.DiComponent;
+import io.brainmachine.adt.dagger.UiComponent;
 import io.brainmachine.adt.dagger.module.ApplicationModule;
 
 /**
@@ -22,7 +23,7 @@ public class MyApplication extends Application {
                 .build();
     }
 
-    public DiComponent getDaggerDiComponent() {
-        return mDiComponent;
+    public UiComponent getDaggerUiComponent() {
+        return mDiComponent.uiComponent();
     }
 }

@@ -1,18 +1,18 @@
-package io.brainmachine.adt.dagger.module;
+package io.brainmachine.adt.dagger.module.infraestruture;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import io.brainmachine.adt.domain.GitHubOAuthService;
-import io.brainmachine.adt.domain.GitHubService;
-import io.brainmachine.adt.domain.GitHubStatusService;
+import io.brainmachine.adt.infraestructure.storage.service.GitHubOAuthService;
+import io.brainmachine.adt.infraestructure.storage.service.GitHubService;
+import io.brainmachine.adt.infraestructure.storage.service.GitHubStatusService;
 import retrofit2.Retrofit;
 
-import static io.brainmachine.adt.dagger.module.NetworkModule.RETROFIT_GITHUB;
-import static io.brainmachine.adt.dagger.module.NetworkModule.RETROFIT_GITHUB_OAUTH;
-import static io.brainmachine.adt.dagger.module.NetworkModule.RETROFIT_GITHUB_STATUS;
+import static io.brainmachine.adt.dagger.module.infraestruture.NetworkModule.RETROFIT_GITHUB;
+import static io.brainmachine.adt.dagger.module.infraestruture.NetworkModule.RETROFIT_GITHUB_OAUTH;
+import static io.brainmachine.adt.dagger.module.infraestruture.NetworkModule.RETROFIT_GITHUB_STATUS;
 
 /**
  * Created by falvojr on 1/12/17.

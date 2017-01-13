@@ -11,7 +11,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="io.brainmachine.adt.MainActivity">
+    tools:context="io.brainmachine.adt.presentation.ui.auth.AuthActivity">
 
     <ImageView
         android:id="@+id/ivGitHubStatus"
